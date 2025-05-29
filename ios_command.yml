@@ -1,0 +1,24 @@
+---
+- name: Run show version on IOS router
+  hosts: routers
+  gather_facts: no
+  collections:
+    - cisco.ios
+
+  tasks:
+    - name: Run 'show version'
+      ios_command:
+        commands:
+          - show version
+      register: show_version_output
+
+    - name: Print 'show version' output
+      debug:
+        var: show_version_output.stdout_lines
+
+    - name: Gather ios_facts
+      ios_facts:
+
+    - name: Print all IOS facts
+      debug:
+        var: ansible_facts
