@@ -1,0 +1,7 @@
+[apic:vars]
+username=admin
+password=!v3G@!4@Y
+ansible_python_interpreter="/Users/justin/Desktop/Justin/cisco_sandboxes/aci_ansible_learning_labs_code_samples/intro_module/.venv/bin/python"
+
+[apic]
+sandboxapicdc.cisco.com
