@@ -185,3 +185,27 @@
         contract_type: "{{ item.contract_type }}"
       with_items: "{{ epg_contracts }}"
       tags: epg
+
+    - name: TASK 14 - ENSURE L3OUT EXISTS
+      aci_l3ext_ext_epg:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        l3out: "{{ external_epg.l3out }}"
+        name: "{{ external_epg.name }}"
+        state: present
+
+    - name: TASK 15 - CONSUMED/PROVIDED CONTRACT TO L3OUT-EPG
+      aci_l3ext_ext_epg_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        l3out: "{{ external_epg.l3out_name }}"
+        external_epg: "{{ l3out_ext_epg }}"
+        contract: "{{ external_epg.contract }}"
+        contract_type: "{{ external_epg.contract_type }}"
+        state: present
+        with_items: "{{ external_epg }}"
+

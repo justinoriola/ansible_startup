@@ -5,39 +5,76 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="28c476a0-6157-482f-b8e3-bd74f73a08c7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Ansible.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/aci_manager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/01_aci_tenant_pb.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/02_aci_tenant_network_pb.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/03_aci_tenant_policies_pb.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/04_aci_tenant_app_pb.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/06_aci_rest_pb.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/07_lab_cleanup.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cisco_aci/ios_command.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Ansible.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Ansible.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_aci_tenant_pb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/02_aci_tenant_network_pb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/03_aci_tenant_policies_pb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/04_aci_tenant_app_pb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/05_aci_deploy_app.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/06_aci_rest_pb.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/07_lab_cleanup.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios_command.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;justinoriola&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/justinoriola/ansible_startup.git&quot;,
+    &quot;accountId&quot;: &quot;1d85d671-71dc-4e54-af96-4da6fe18dc0e&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="2xkqplRCaXkuFdf3RK1FaVKldCy" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="Ansible" />
@@ -79,5 +116,19 @@
       <updated>1748492603863</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>
