@@ -1,9 +1,8 @@
-import os
 import yaml
 import pandas as pd
-import json
-class AciManager:
 
+
+class AciManager:
     ACI_SPREADSHEET_PATH = "/Users/justin/Desktop/Justin/cisco_sandboxes/Dev_sec_plan/DevSec study plan.xlsx"
 
     def __init__(self, tenant_name, vrf_name, bridge_domain_name, bridge_domain_ip, l3out, l3out_ext_epg_name):
@@ -27,8 +26,8 @@ class AciManager:
             return
 
         try:
-            with open(f"./yaml_folder/epg.yaml", 'w') as file:
-                yaml.dump({"epg": formated_spreadsheet_data}, file)
+            with open(f"./vars/aci_vars.yml", 'w') as file:
+                yaml.dump(formated_spreadsheet_data, file, default_flow_style=False)
             print(f"YAML file created successfully.")
         except Exception as e:
             print(f"Error creating YAML files: {e}")
@@ -68,8 +67,8 @@ class AciManager:
     def _determine_other_epg_contract_type(self):
         """Determine the contract type for the other EPG."""
         if self.l3out_status and self.l3out_contract_type == "consumed":
-            return "provided"
-        return "consumed"
+            return "provider"
+        return "consumer"
 
     def build_aci_config_payload(self):
         """
@@ -96,53 +95,65 @@ class AciManager:
         safe = AciManager.safe_str  # Shortcut for cleaner lines
 
         def build_application_profiles():
+            try:
+                if self.l3out_status:
+                    epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
+                    app_profile = safe(aci.get(epg_key, ""))
+
+                    # Check prefix before slicing
+                    if app_profile.startswith("EPG_"):
+                        ap_name = f"AP_{app_profile[4:]}"
+                    else:
+                        ap_name = f"AP_{app_profile}"
+
+                    return [{"ap": ap_name}]
+
+                else:
+                    consumed_epg = safe(aci.get("CONSUMED_EPG", ""))
+                    provided_epg = safe(aci.get("PROVIDED_EPG", ""))
+
+                    aps = []
+                    for epg in [consumed_epg, provided_epg]:
+                        if epg:
+                            ap_name = f"AP_{epg[4:]}" if epg.startswith("EPG_") else f"AP_{epg}"
+                            aps.append({"ap": ap_name})
+                    return aps
+
+            except Exception as e:
+                print(f"Error building application profiles: {e}")
+                return []
+
+        def get_corresponding_ap():
             if self.l3out_status:
-                epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                return [{
-                    "tenant": safe(self.tenant_name),
-                    "ap": f"AP_{safe(aci[epg_key])}",
-                }]
+                ap = build_application_profiles()[0]['ap']
             else:
-                return [
-                    {
-                        "tenant": safe(self.tenant_name),
-                        "ap": f"AP_{safe(aci['CONSUMED_EPG'])}",
-                    },
-                    {
-                        "tenant": safe(self.tenant_name),
-                        "ap": f"AP_{safe(aci['PROVIDED_EPG'])}",
-                    }
-                ]
+                ap = build_application_profiles()[0]['ap'] if self.other_epg_contract_type == "consumer" \
+                    else build_application_profiles()[1]['ap']
+            return ap
 
         def build_endpoint_groups():
             if self.l3out_status:
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
+                other_epg_ap = get_corresponding_ap()
+
                 return [
                     {
-                        "tenant": safe(self.tenant_name),
-                        "ap": f"AP_{safe(aci[epg_key])}",
+                        "ap": other_epg_ap,
                         "epg": safe(aci[epg_key]),
                         "bd": safe(self.bridge_domain_name),
                         "encap": "22"
-                    },
-                    {
-                        "tenant": safe(self.tenant_name),
-                        "l3out_name": safe(self.l3out),
-                        "l3out_ext_epg": safe(self.l3out_ext_epg)
                     }
                 ]
             else:
                 return [
                     {
-                        "tenant": safe(self.tenant_name),
-                        "ap": f"AP_{safe(aci['CONSUMED_EPG'])}",
+                        "ap": build_application_profiles()[0]['ap'],
                         "epg": safe(aci['CONSUMED_EPG']),
                         "bd": safe(self.bridge_domain_name),
                         "encap": "22",
                     },
                     {
-                        "tenant": safe(self.tenant_name),
-                        "ap": f"AP_{safe(aci['PROVIDED_EPG'])}",
+                        "ap": build_application_profiles()[1]['ap'],
                         "epg": safe(aci['PROVIDED_EPG']),
                         "bd": safe(self.bridge_domain_name),
                         "encap": "22",
@@ -152,71 +163,64 @@ class AciManager:
         def build_epg_contracts():
             if self.l3out_status:
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
+                other_epg_ap = get_corresponding_ap()
                 return [
                     {
-                        "tenant": safe(self.tenant_name),
+                        "ap": other_epg_ap,
                         "epg": safe(aci[epg_key]),
                         "scope": safe(aci["CONTRACT_SCOPE"]),
                         "contract": safe(aci["CONTRACT_NAME"]),
                         "contract_type": self.other_epg_contract_type,
-                    },
-                    {
-                        "tenant": safe(self.tenant_name),
-                        "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": safe(self.l3out_contract_type),
-                        "l3out_name": safe(self.l3out),
-                        "l3out_ext_epg": safe(self.l3out_ext_epg)
                     }
                 ]
             else:
                 return [
                     {
-                        "tenant": safe(self.tenant_name),
                         "epg": safe(aci["CONSUMED_EPG"]),
                         "scope": safe(aci["CONTRACT_SCOPE"]),
                         "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": "consumed",
+                        "contract_type": "consumer",
+                        "ap": build_application_profiles()[0]['ap'],
                     },
                     {
-                        "tenant": safe(self.tenant_name),
                         "epg": safe(aci["PROVIDED_EPG"]),
                         "scope": safe(aci["CONTRACT_SCOPE"]),
                         "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": "provided",
+                        "contract_type": "provider",
+                        "ap": build_application_profiles()[1]['ap'],
                     }
                 ]
 
         def build_external_epg():
             if not self.l3out_status:
                 return None
-            return {
-                "tenant": safe(self.tenant_name),
-                "l3out_name": safe(self.l3out),
-                "l3out_ext_epg": safe(self.l3out_ext_epg),
-                "contract": safe(aci["CONTRACT_NAME"]),
-                "contract_type": safe(aci[f"{self.other_epg_contract_type.upper()}_EPG"])
-            }
+            return [
+                {
+                    "l3out_name": safe(self.l3out),
+                    "l3out_ext_epg": safe(self.l3out_ext_epg),
+                    "contract": safe(aci["CONTRACT_NAME"]),
+                    "contract_type": safe(self.l3out_contract_type)
+                }
+            ]
 
         output_data = {
             "tenant": self.tenant_name,
             "vrf": self.vrf_name,
-            "bridge_domain": [{
+            "bridge_domains": [{
                 "bd": safe(self.bridge_domain_name),
                 "gateway": safe(self.bridge_domain_ip),
                 "mask": "24",
                 "scope": "public",
             }],
-            "ap": build_application_profiles(),
+            "aps": build_application_profiles(),
             "epgs": build_endpoint_groups(),
             "contracts": [{
-                "tenant": safe(self.tenant_name),
                 "contract": safe(aci["CONTRACT_NAME"]),
                 "scope": safe(aci["CONTRACT_SCOPE"]),
                 "subject": safe(aci["SUBJECT_NAME"]),
                 "filter": safe(aci["VZ_FILTER_NAME"]),
             }],
             "filters": [{
-                "tenant": safe(self.tenant_name),
                 "filter": safe(aci["VZ_FILTER_NAME"]),
                 "entry": safe(aci["VZ_FILTER_ENTRY_NAME"]),
                 "protocol": safe(aci["IP_PROTOCOL"]),
@@ -228,4 +232,3 @@ class AciManager:
         }
 
         return output_data
-

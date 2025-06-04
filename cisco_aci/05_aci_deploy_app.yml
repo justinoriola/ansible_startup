@@ -36,7 +36,7 @@
         state: "present"
         validate_certs: False
         tenant: "{{ tenant }}"
-        bd: "{{ item.bd | default('prod_bd') }}"
+        bd: "{{ item.bd | default('prod_tn') }}"
         vrf: "{{ vrf }}"
       with_items: "{{ bridge_domains }}"
       tags: bd
@@ -80,8 +80,8 @@
         entry: "{{ item.entry }}"
         ether_type: "ip"
         ip_protocol: "{{ item.protocol }}"
-        dst_port_start: "{{ item.port }}"
-        dst_port_end: "{{ item.port }}"
+        dst_port_start: "{{ item.port_from }}"
+        dst_port_end: "{{ item.port_to }}"
       with_items: "{{ filters }}"
       tags: filter, contract
 
@@ -134,8 +134,9 @@
         validate_certs: False
         state: "present"
         tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
+        ap: "{{ item.ap }}"
         descr: "App Profile Created Using Ansible"
+      with_items: "{{ aps }}"
       tags: app, epg
 
     - name: TASK 11 - ENSURE APPLICATION EPGS EXISTS
@@ -146,7 +147,7 @@
         validate_certs: False
         state: "present"
         tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
+        ap: "{{ item.ap }}"
         epg: "{{ item.epg }}"
         bd: "{{ item.bd }}"
         descr: "EPG Created Using Ansible"
@@ -161,7 +162,7 @@
         validate_certs: False
         state: "present"
         tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
+        ap: "{{ item.ap }}"
         epg: "{{ item.epg }}"
         domain: "aci_ansible_lab"
         domain_type: "vmm"
@@ -179,33 +180,60 @@
         validate_certs: False
         state: "present"
         tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
+        ap: "{{ item.ap }}"
         epg: "{{ item.epg }}"
         contract: "{{ item.contract }}"
         contract_type: "{{ item.contract_type }}"
       with_items: "{{ epg_contracts }}"
       tags: epg
 
-    - name: TASK 14 - ENSURE L3OUT EXISTS
-      aci_l3ext_ext_epg:
+    - name: TASK 14 - CREATE L3 DOMAIN
+      cisco.aci.aci_domain:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
-        tenant: "{{ tenant }}"
-        l3out: "{{ external_epg.l3out }}"
-        name: "{{ external_epg.name }}"
-        state: present
+        validate_certs: false
+        domain: "EXT_DOM"           # Name your domain
+        domain_type: "l3dom"        # This makes it an L3 domain
+        state: "present"
 
-    - name: TASK 15 - CONSUMED/PROVIDED CONTRACT TO L3OUT-EPG
-      aci_l3ext_ext_epg_contract:
+    - name: TASK 15 - Ensure L3Out exists
+      cisco.aci.aci_l3out:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         tenant: "{{ tenant }}"
-        l3out: "{{ external_epg.l3out_name }}"
-        external_epg: "{{ l3out_ext_epg }}"
-        contract: "{{ external_epg.contract }}"
-        contract_type: "{{ external_epg.contract_type }}"
+        l3out: "{{ item.l3out_name }}"
+        domain: "EXT_DOM"
+        vrf: "{{ vrf }}"
         state: present
-        with_items: "{{ external_epg }}"
+        validate_certs: false
+        description: "L3Out Created Using Ansible"
+      with_items: "{{ external_epg }}"
+
+    - name: TASK 16 - ENSURE EXT EPG EXISTS
+      cisco.aci.aci_l3out_extepg:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        l3out: "{{ item.l3out_name }}"
+        extepg: "{{ item.l3out_ext_epg }}"
+        validate_certs: false
+        state: present
+      with_items: "{{ external_epg }}"
+
+    - name: TASK 17 - CONSUMED/PROVIDED CONTRACT TO L3OUT-EPG
+      cisco.aci.aci_l3out_extepg_to_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        tenant: "{{ tenant }}"
+        l3out: "{{ item.l3out_name }}"
+        extepg: "{{ item.l3out_ext_epg }}"
+        contract: "{{ item.contract }}"
+        contract_type: "{{ item.contract_type }}"
+        state: present
+        validate_certs: false
+      with_items: "{{ external_epg }}"
 

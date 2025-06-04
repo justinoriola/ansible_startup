@@ -5,28 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="28c476a0-6157-482f-b8e3-bd74f73a08c7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/aci_manager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/01_aci_tenant_pb.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/02_aci_tenant_network_pb.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/03_aci_tenant_policies_pb.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/04_aci_tenant_app_pb.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/06_aci_rest_pb.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/07_lab_cleanup.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cisco_aci/ios_command.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Ansible.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Ansible.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vars/aci_vars.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_aci_tenant_pb.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/02_aci_tenant_network_pb.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/03_aci_tenant_policies_pb.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/04_aci_tenant_app_pb.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/05_aci_deploy_app.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/06_aci_rest_pb.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/07_lab_cleanup.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios_command.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aci_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/aci_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yaml_folder/epg.yaml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,6 +58,11 @@
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/yaml_folder" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="Ansible" />
