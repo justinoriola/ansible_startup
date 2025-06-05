@@ -14,8 +14,8 @@ class AciManager:
         self.l3out_ext_epg = l3out_ext_epg_name
         self.aci_spreadsheet_data = self._load_aci_spreadsheet_data()
         self.l3out_is_involved = self.is_l3out_involved()
-        self.l3out_status = self.l3out_is_involved.get("status", False)
-        self.l3out_contract_type = self.l3out_is_involved.get("l3out_contract_type")
+        self.l3out_status = self.l3out_is_involved.get("status", False) if self.l3out_is_involved else False
+        self.l3out_contract_type = self.l3out_is_involved.get("l3out_contract_type") if self.l3out_is_involved else False
         self.other_epg_contract_type = self._determine_other_epg_contract_type()
 
     def create_aci_yaml_files(self):
@@ -132,10 +132,10 @@ class AciManager:
             return ap
 
         def build_endpoint_groups():
+            other_epg_ap = get_corresponding_ap()
             if self.l3out_status:
+                print(self.l3out_status)
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                other_epg_ap = get_corresponding_ap()
-
                 return [
                     {
                         "ap": other_epg_ap,
@@ -161,9 +161,9 @@ class AciManager:
                 ]
 
         def build_epg_contracts():
+            other_epg_ap = get_corresponding_ap()
             if self.l3out_status:
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                other_epg_ap = get_corresponding_ap()
                 return [
                     {
                         "ap": other_epg_ap,
@@ -193,7 +193,7 @@ class AciManager:
 
         def build_external_epg():
             if not self.l3out_status:
-                return None
+                return False
             return [
                 {
                     "l3out_name": safe(self.l3out),

@@ -210,6 +210,7 @@
         validate_certs: false
         description: "L3Out Created Using Ansible"
       with_items: "{{ external_epg }}"
+      when: external_epg != false
 
     - name: TASK 16 - ENSURE EXT EPG EXISTS
       cisco.aci.aci_l3out_extepg:
@@ -222,6 +223,7 @@
         validate_certs: false
         state: present
       with_items: "{{ external_epg }}"
+      when: external_epg != false
 
     - name: TASK 17 - CONSUMED/PROVIDED CONTRACT TO L3OUT-EPG
       cisco.aci.aci_l3out_extepg_to_contract:
@@ -236,4 +238,5 @@
         state: present
         validate_certs: false
       with_items: "{{ external_epg }}"
+      when: external_epg != false
 
