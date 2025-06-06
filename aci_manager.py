@@ -17,6 +17,9 @@ class AciManager:
         self.l3out_status = self.l3out_is_involved.get("status", False) if self.l3out_is_involved else False
         self.l3out_contract_type = self.l3out_is_involved.get("l3out_contract_type") if self.l3out_is_involved else False
         self.other_epg_contract_type = self._determine_other_epg_contract_type()
+        self.ap = []
+        self.epgs = []
+        self.epg_contracts = []
 
     def create_aci_yaml_files(self):
         # Create YAML files for ACI configuration
@@ -25,8 +28,18 @@ class AciManager:
             print("No data available to create YAML files.")
             return
 
+        # Determine the path based on L3Out status
+        if self.l3out_status:
+            aci_vars_path = f"./vars/aci_vars_l3out.yml"
+        else:
+            aci_vars_path = f"./vars/aci_vars.yml"
+
+        # Ensure the directory exists
+        import os
+        os.makedirs(os.path.dirname(aci_vars_path), exist_ok=True)
+
         try:
-            with open(f"./vars/aci_vars.yml", 'w') as file:
+            with open(aci_vars_path, 'w') as file:
                 yaml.dump(formated_spreadsheet_data, file, default_flow_style=False)
             print(f"YAML file created successfully.")
         except Exception as e:
@@ -67,8 +80,8 @@ class AciManager:
     def _determine_other_epg_contract_type(self):
         """Determine the contract type for the other EPG."""
         if self.l3out_status and self.l3out_contract_type == "consumed":
-            return "provider"
-        return "consumer"
+            return "provided"
+        return "consumed"
 
     def build_aci_config_payload(self):
         """
@@ -106,18 +119,18 @@ class AciManager:
                     else:
                         ap_name = f"AP_{app_profile}"
 
-                    return [{"ap": ap_name}]
+                    self.ap.append({"ap": ap_name})
 
                 else:
                     consumed_epg = safe(aci.get("CONSUMED_EPG", ""))
                     provided_epg = safe(aci.get("PROVIDED_EPG", ""))
 
-                    aps = []
+                    # aps = []
                     for epg in [consumed_epg, provided_epg]:
                         if epg:
                             ap_name = f"AP_{epg[4:]}" if epg.startswith("EPG_") else f"AP_{epg}"
-                            aps.append({"ap": ap_name})
-                    return aps
+                            self.ap.append({"ap": ap_name})
+                return self.ap
 
             except Exception as e:
                 print(f"Error building application profiles: {e}")
@@ -125,71 +138,70 @@ class AciManager:
 
         def get_corresponding_ap():
             if self.l3out_status:
-                ap = build_application_profiles()[0]['ap']
+                ap = self.ap[0]['ap']
             else:
-                ap = build_application_profiles()[0]['ap'] if self.other_epg_contract_type == "consumer" \
-                    else build_application_profiles()[1]['ap']
+                ap = self.ap[0]['ap'] if self.other_epg_contract_type == "consumer" \
+                    else self.ap[1]['ap']
             return ap
 
         def build_endpoint_groups():
-            other_epg_ap = get_corresponding_ap()
+            epg_list = []
+
+            def create_epg(ap, epg_name):
+                return {
+                    "ap": ap,
+                    "epg": safe(epg_name),
+                    "bd": safe(self.bridge_domain_name),
+                    "encap": "22"
+                }
+
             if self.l3out_status:
-                print(self.l3out_status)
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                return [
-                    {
-                        "ap": other_epg_ap,
-                        "epg": safe(aci[epg_key]),
-                        "bd": safe(self.bridge_domain_name),
-                        "encap": "22"
-                    }
-                ]
+                epg_list.append(
+                    create_epg(get_corresponding_ap(), aci[epg_key])
+                )
             else:
-                return [
-                    {
-                        "ap": build_application_profiles()[0]['ap'],
-                        "epg": safe(aci['CONSUMED_EPG']),
-                        "bd": safe(self.bridge_domain_name),
-                        "encap": "22",
-                    },
-                    {
-                        "ap": build_application_profiles()[1]['ap'],
-                        "epg": safe(aci['PROVIDED_EPG']),
-                        "bd": safe(self.bridge_domain_name),
-                        "encap": "22",
-                    }
-                ]
+                epg_list.append(
+                    create_epg(self.ap[1]['ap'], aci['PROVIDED_EPG'])
+                )
+                epg_list.append(
+                    create_epg(self.ap[0]['ap'], aci['CONSUMED_EPG'])
+                )
+
+            self.epgs.extend(epg_list)
 
         def build_epg_contracts():
-            other_epg_ap = get_corresponding_ap()
+            def create_contract(epg, contract_type, ap):
+                return {
+                    "epg": safe(epg),
+                    "scope": safe(aci["CONTRACT_SCOPE"]),
+                    "contract": safe(aci["CONTRACT_NAME"]),
+                    "contract_type": contract_type,
+                    "ap": ap,
+                }
+
             if self.l3out_status:
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                return [
-                    {
-                        "ap": other_epg_ap,
-                        "epg": safe(aci[epg_key]),
-                        "scope": safe(aci["CONTRACT_SCOPE"]),
-                        "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": self.other_epg_contract_type,
-                    }
-                ]
+                contract = create_contract(
+                    epg=aci[epg_key],
+                    contract_type=self.other_epg_contract_type,
+                    ap=get_corresponding_ap()
+                )
+                self.epg_contracts.append(contract)
             else:
-                return [
-                    {
-                        "epg": safe(aci["CONSUMED_EPG"]),
-                        "scope": safe(aci["CONTRACT_SCOPE"]),
-                        "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": "consumer",
-                        "ap": build_application_profiles()[0]['ap'],
-                    },
-                    {
-                        "epg": safe(aci["PROVIDED_EPG"]),
-                        "scope": safe(aci["CONTRACT_SCOPE"]),
-                        "contract": safe(aci["CONTRACT_NAME"]),
-                        "contract_type": "provider",
-                        "ap": build_application_profiles()[1]['ap'],
-                    }
-                ]
+                self.epg_contracts.extend([
+                    create_contract(
+                        epg=aci["PROVIDED_EPG"],
+                        contract_type="provider",
+                        ap=self.ap[1]['ap']
+                    ),
+                    create_contract(
+                        epg=aci["CONSUMED_EPG"],
+                        contract_type="consumer",
+                        ap=self.ap[0]['ap']
+                    )
+                ])
+
 
         def build_external_epg():
             if not self.l3out_status:
@@ -203,6 +215,17 @@ class AciManager:
                 }
             ]
 
+        # Build the application profiles, endpoint groups, and other components
+        build_application_profiles()
+        build_endpoint_groups()
+        build_epg_contracts()
+
+        # Check if any of the lists are empty and return early if so
+        if not self.ap or not self.epgs or not self.epg_contracts:
+            print("No valid application profiles, endpoint groups, or contracts found.")
+            return {}
+
+        # Prepare the output data structure
         output_data = {
             "tenant": self.tenant_name,
             "vrf": self.vrf_name,
@@ -212,8 +235,8 @@ class AciManager:
                 "mask": "24",
                 "scope": "public",
             }],
-            "aps": build_application_profiles(),
-            "epgs": build_endpoint_groups(),
+            "aps": self.ap,
+            "epgs": self.epgs,
             "contracts": [{
                 "contract": safe(aci["CONTRACT_NAME"]),
                 "scope": safe(aci["CONTRACT_SCOPE"]),
@@ -227,7 +250,7 @@ class AciManager:
                 "port_from": str(int(aci["PORTS_FROM"])),
                 "port_to": str(int(aci["PORTS_TO"])),
             }],
-            "epg_contracts": build_epg_contracts(),
+            "epg_contracts": self.epg_contracts,
             "external_epg": build_external_epg()
         }
 

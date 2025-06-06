@@ -13,7 +13,7 @@ contracts:
 epg_contracts:
 - ap: AP_DAVINCI_HUB_MEDIA
   contract: CON_EPG_L3OUT-to-EPG_DAVINCI_HUB_MEDIA
-  contract_type: provider
+  contract_type: provided
   epg: EPG_DAVINCI_HUB_MEDIA
   scope: vrf
 epgs:
@@ -23,14 +23,14 @@ epgs:
   epg: EPG_DAVINCI_HUB_MEDIA
 external_epg:
 - contract: CON_EPG_L3OUT-to-EPG_DAVINCI_HUB_MEDIA
-  contract_type: consumer
+  contract_type: consumed
   l3out_ext_epg: EXT_EPG_INTERNET
-  l3out_name: l3out
+  l3out_name: l3Out
 filters:
 - entry: TCP_8888_FLT
   filter: TCP_8888_FLT
   port_from: '8888'
   port_to: '8888'
   protocol: tcp
-tenant: TN_prod
+tenant: TN_Test
 vrf: prod_legacy

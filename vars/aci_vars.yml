@@ -12,25 +12,25 @@ contracts:
   scope: vrf
   subject: SUBJ_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
 epg_contracts:
-- ap: AP_DAVINCI_HUB_MEDIA
-  contract: CON_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
-  contract_type: consumer
-  epg: EPG_DAVINCI_HUB_MEDIA
-  scope: vrf
 - ap: AP_151.211.208.0
   contract: CON_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
   contract_type: provider
   epg: EPG_151.211.208.0
   scope: vrf
-epgs:
 - ap: AP_DAVINCI_HUB_MEDIA
-  bd: prod_tn
-  encap: '22'
+  contract: CON_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
+  contract_type: consumer
   epg: EPG_DAVINCI_HUB_MEDIA
+  scope: vrf
+epgs:
 - ap: AP_151.211.208.0
   bd: prod_tn
   encap: '22'
   epg: EPG_151.211.208.0
+- ap: AP_DAVINCI_HUB_MEDIA
+  bd: prod_tn
+  encap: '22'
+  epg: EPG_DAVINCI_HUB_MEDIA
 external_epg: false
 filters:
 - entry: UDP_1434_FLT
