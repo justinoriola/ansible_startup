@@ -22,14 +22,14 @@ class AciManager:
         counter = 0
         for aci_data in self.aci_spreadsheet_data:
             counter += 1
-            
+
             # Ensure all required fields are present
             self.l3out_is_involved = self.is_l3out_involved(aci_data)
             self.l3out_status = self.l3out_is_involved.get("status", False) if self.l3out_is_involved else False
             self.l3out_contract_type = self.l3out_is_involved.get(
                 "l3out_contract_type") if self.l3out_is_involved else False
             self.other_epg_contract_type = self._determine_other_epg_contract_type()
-            
+
             # Create YAML files for ACI configuration
             formated_spreadsheet_data = self.build_aci_config_payload(aci_data)
 
@@ -51,6 +51,8 @@ class AciManager:
                 with open(aci_vars_path, 'w') as file:
                     yaml.dump(formated_spreadsheet_data, file, default_flow_style=False)
                 print(f"YAML file created successfully.")
+                if counter == 3:
+                    break
             except Exception as e:
                 print(f"Error creating YAML files: {e}")
 
@@ -64,7 +66,7 @@ class AciManager:
         try:
             df = pd.read_excel(AciManager.ACI_SPREADSHEET_PATH, sheet_name='Sheet1')
             data = df.to_dict(orient='records')
-            return data[:2] if data else {}
+            return data if data else {}
         except FileNotFoundError:
             print("ACI Excel file not found.")
             return {}
@@ -190,7 +192,7 @@ class AciManager:
 
             if self.l3out_status:
                 epg_key = f"{self.other_epg_contract_type.upper()}_EPG"
-                contract_type = self.l3out_contract_type[:-1] + "r"
+                contract_type = epg_key.lower().removesuffix("d_epg") + "r"
                 return [
                     create_contract(
                     epg=aci_spreadsheet[epg_key],

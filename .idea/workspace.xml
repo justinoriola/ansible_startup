@@ -7,10 +7,9 @@
     <list default="true" id="28c476a0-6157-482f-b8e3-bd74f73a08c7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aci_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/aci_manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" beforeDir="false" afterPath="$PROJECT_DIR$/cisco_aci/05_aci_deploy_app.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_vars.yml" beforeDir="false" afterPath="$PROJECT_DIR$/vars/aci_vars_1.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_vars_l3out.yml" beforeDir="false" afterPath="$PROJECT_DIR$/vars/aci_vars_l3out_2.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vars/aci_vars_1.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vars/aci_vars_l3out_2.yml" beforeDir="false" afterPath="$PROJECT_DIR$/vars/aci_vars_l3out_1.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

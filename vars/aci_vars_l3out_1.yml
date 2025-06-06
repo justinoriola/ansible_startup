@@ -13,7 +13,7 @@ contracts:
 epg_contracts:
 - ap: AP_DAVINCI_HUB_MEDIA
   contract: CON_EPG_L3OUT-to-EPG_DAVINCI_HUB_MEDIA
-  contract_type: consumer
+  contract_type: provider
   epg: EPG_DAVINCI_HUB_MEDIA
   scope: vrf
 epgs:

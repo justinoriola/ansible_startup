@@ -1,0 +1,42 @@
+aps:
+- ap: AP_VZANY
+- ap: AP_DC
+bridge_domains:
+- bd: prod_tn
+  gateway: 192.168.0.1
+  mask: '24'
+  scope: public
+contracts:
+- contract: CON_VZANY-to-EPG_DC
+  filter: DNS_FLT
+  scope: vrf
+  subject: SUBJ_VZANY-to-EPG_DC
+epg_contracts:
+- ap: AP_DC
+  contract: CON_VZANY-to-EPG_DC
+  contract_type: provider
+  epg: EPG_DC
+  scope: vrf
+- ap: AP_VZANY
+  contract: CON_VZANY-to-EPG_DC
+  contract_type: consumer
+  epg: VZANY
+  scope: vrf
+epgs:
+- ap: AP_DC
+  bd: prod_tn
+  encap: '22'
+  epg: EPG_DC
+- ap: AP_VZANY
+  bd: prod_tn
+  encap: '22'
+  epg: VZANY
+external_epg: false
+filters:
+- entry: DNS_FLT
+  filter: DNS_FLT
+  port_from: '53'
+  port_to: '53'
+  protocol: tcp
+tenant: TN_Test
+vrf: prod_legacy
