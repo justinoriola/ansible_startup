@@ -8,7 +8,7 @@ bridge_domains:
   scope: public
 contracts:
 - contract: CON_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
-  filter: UDP_1434_FLT
+  filter: TCP_1433_FLT
   scope: vrf
   subject: SUBJ_EPG_DAVINCI_HUB_MEDIA-to-EPG_SQL_CLUSTERS
 epg_contracts:
@@ -33,10 +33,10 @@ epgs:
   epg: EPG_DAVINCI_HUB_MEDIA
 external_epg: false
 filters:
-- entry: UDP_1434_FLT
-  filter: UDP_1434_FLT
-  port_from: '1434'
-  port_to: '1434'
-  protocol: udp
+- entry: TCP_1433_FLT
+  filter: TCP_1433_FLT
+  port_from: '1433'
+  port_to: '1433'
+  protocol: tcp
 tenant: TN_Test
 vrf: prod_legacy

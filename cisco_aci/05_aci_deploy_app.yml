@@ -136,7 +136,7 @@
         tenant: "{{ tenant }}"
         ap: "{{ item.ap }}"
         descr: "App Profile Created Using Ansible"
-      with_items: "{{ aps }}"
+      loop: "{{ aps }}"
       tags: app, epg
 
     - name: TASK 11 - ENSURE APPLICATION EPGS EXISTS

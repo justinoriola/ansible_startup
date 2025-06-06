@@ -23,28 +23,35 @@ aci.create_aci_yaml_files()
 def run_ansible_playbook():
     """
     Run the Ansible playbook to deploy the application in Cisco ACI.
-    :return:
     """
-    # Ensure the inventory file exists
-    if aci.l3out_status:
-        vars_file = "./vars/aci_vars_l3out.yml"
-    else:
-        vars_file = "./vars/aci_vars.yml"
+    vars_dir = './vars'
+    yml_files = [file for file in os.listdir(vars_dir) if file.startswith('aci_vars_') and file.endswith('.yml')]
 
-    # Run the Ansible playbook with the specified inventory and variables file
-    result = subprocess.run(
-        [
-            "ansible-playbook",
-            "-i", "inventory",
-            "./cisco_aci/05_aci_deploy_app.yml",
-            "-e", f"@{vars_file}"
-        ],
-        capture_output=True,
-        text=True
-    )
+    if not yml_files:
+        print("No YAML files found in the 'vars' directory.")
+        return
 
-    print(result.stdout)
-    print(result.stderr)
+    for file_name in yml_files:
+        full_path = os.path.join(vars_dir, file_name)
+        print(f"Running playbook with vars file: {full_path}")
+        result = subprocess.run(
+            [
+                "ansible-playbook",
+                "-i", "inventory",
+                "./cisco_aci/05_aci_deploy_app.yml",
+                "-e", f"@{full_path}",
+            ],
+            capture_output=True,
+            text=True
+        )
+
+        # Check if the playbook ran successfully
+        play_recap_started = False
+        for line in result.stdout.splitlines():
+            if "PLAY RECAP" in line:
+                play_recap_started = True
+            if play_recap_started:
+                print(line)
 
 
 if __name__ == "__main__":
