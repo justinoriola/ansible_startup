@@ -1,60 +1,54 @@
 import yaml
 import pandas as pd
+import os
 
-
-class AciManager:
+class YamlFileHandler:
     ACI_SPREADSHEET_PATH = "/Users/justin/Desktop/Justin/cisco_sandboxes/Dev_sec_plan/DevSec study plan.xlsx"
 
-    def __init__(self, tenant_name, vrf_name, bridge_domain_name, bridge_domain_ip, l3out, l3out_ext_epg_name):
+    def __init__(self, tenant_name=None, vrf_name=None, bridge_domain_name=None, bridge_domain_ip=None, l3out=None, l3out_ext_epg_name=None):
         self.l3out_status = False
         self.l3out_is_involved = None
         self.l3out_contract_type = None
         self.other_epg_contract_type = None
-        self.tenant_name = tenant_name
-        self.vrf_name = vrf_name
-        self.bridge_domain_name = bridge_domain_name
-        self.bridge_domain_ip = bridge_domain_ip
-        self.l3out = l3out
-        self.l3out_ext_epg = l3out_ext_epg_name
+        self.yaml_file_path = "vars/aci_config_"
+        self.tenant_name = tenant_name if tenant_name else "TN_Default"
+        self.vrf_name = vrf_name if vrf_name else "VRF_Default"
+        self.bridge_domain_name = bridge_domain_name if bridge_domain_name else "BD_Default"
+        self.bridge_domain_ip = bridge_domain_ip if bridge_domain_ip else "192.168.0.1"
+        self.l3out = l3out if l3out else "L3OUT_Default"
+        self.l3out_ext_epg = l3out_ext_epg_name if l3out_ext_epg_name else "EXT_EPG_Default"
         self.aci_spreadsheet_data = self._load_aci_spreadsheet_data()
 
-    def create_aci_yaml_files(self):
-        counter = 0
-        for aci_data in self.aci_spreadsheet_data:
-            counter += 1
+    def create_aci_yaml_files(self, aci_data):
 
-            # Ensure all required fields are present
-            self.l3out_is_involved = self.is_l3out_involved(aci_data)
-            self.l3out_status = self.l3out_is_involved.get("status", False) if self.l3out_is_involved else False
-            self.l3out_contract_type = self.l3out_is_involved.get(
-                "l3out_contract_type") if self.l3out_is_involved else False
-            self.other_epg_contract_type = self._determine_other_epg_contract_type()
+        # Ensure all required fields are present
+        self.l3out_is_involved = self.is_l3out_involved(aci_data)
+        self.l3out_status = self.l3out_is_involved.get("status", False) if self.l3out_is_involved else False
+        self.l3out_contract_type = self.l3out_is_involved.get(
+            "l3out_contract_type") if self.l3out_is_involved else False
+        self.other_epg_contract_type = self._determine_other_epg_contract_type()
 
-            # Create YAML files for ACI configuration
-            formated_spreadsheet_data = self.build_aci_config_payload(aci_data)
+        # Create YAML files for ACI configuration
+        formated_spreadsheet_data = self.build_aci_config_payload(aci_data)
 
-            if not formated_spreadsheet_data:
-                print("No data available to create YAML files.")
-                return
+        if not formated_spreadsheet_data:
+            print("No data available to create YAML files.")
+            return
 
-            # Determine the path based on L3Out status
-            if self.l3out_status:
-                aci_vars_path = f"./vars/aci_vars_l3out_{counter}.yml"
-            else:
-                aci_vars_path = f"./vars/aci_vars_{counter}.yml"
+        # Construct the YAML file name and full path
+        yaml_file_name = str(self).split()[-1].strip(">")
+        self.yaml_file_path += f"{yaml_file_name}.yml"
 
-            # Ensure the directory exists
-            import os
-            os.makedirs(os.path.dirname(aci_vars_path), exist_ok=True)
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(self.yaml_file_path), exist_ok=True)
 
-            try:
-                with open(aci_vars_path, 'w') as file:
-                    yaml.dump(formated_spreadsheet_data, file, default_flow_style=False)
-                print(f"YAML file created successfully.")
-                if counter == 3:
-                    break
-            except Exception as e:
-                print(f"Error creating YAML files: {e}")
+        try:
+            with open(self.yaml_file_path, 'w') as file:
+                yaml.dump(formated_spreadsheet_data, file, default_flow_style=False)
+            # print(f"YAML file created successfully - {self.yaml_file_path}.")
+        except Exception as e:
+            print(f"Error creating YAML files: {e}")
+
 
     @staticmethod
     def safe_str(value):
@@ -64,7 +58,7 @@ class AciManager:
 
     def _load_aci_spreadsheet_data(self):
         try:
-            df = pd.read_excel(AciManager.ACI_SPREADSHEET_PATH, sheet_name='Sheet1')
+            df = pd.read_excel(YamlFileHandler.ACI_SPREADSHEET_PATH, sheet_name='Sheet1')
             data = df.to_dict(orient='records')
             return data if data else {}
         except FileNotFoundError:
@@ -116,7 +110,7 @@ class AciManager:
             print(f"Missing required keys: {', '.join(missing)}")
             return {}
 
-        safe = AciManager.safe_str  # Shortcut for cleaner lines
+        safe = YamlFileHandler.safe_str  # Shortcut for cleaner lines
 
         def build_application_profiles():
             try:

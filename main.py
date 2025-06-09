@@ -1,81 +1,52 @@
-
-import subprocess
 import os
-from aci_manager import AciManager
+import threading
+from yaml_file_hanlder import YamlFileHandler
+from playbook_runner import PlaybookRunner
+from time import sleep
 
 # Set environment variable to disable host key checking
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
-# Define AciManager instance
-aci = AciManager(
-    'TN_Test',
-    'prod_legacy',
-    'prod_tn',
-    '192.168.0.1',
-    'l3Out',
-    'EXT_EPG_INTERNET'
-)
-
-# Create the necessary ACI YAML files
-aci.create_aci_yaml_files()
-
-
-import os
-import subprocess
-import threading
-
-def run_playbook(file_name):
-    """
-    Run a single Ansible playbook with the given YAML variable file.
-    """
-    try:
-        print(f"\n📢 Starting Ansible for: {file_name}...")
-        result = subprocess.run(
-            [
-                "ansible-playbook",
-                "-i", "inventory",
-                "./cisco_aci/05_aci_deploy_app.yml",
-                "-e", f"@./vars/{file_name}",
-            ],
-            capture_output=True,
-            text=True
-        )
-
-        # print(f"\n===== [OUTPUT for {file_name}] =====")
-        # print(result.stdout)
-        #
-        # print(f"\n===== [ERROR for {file_name}] =====")
-        # print(result.stderr)
-
-        # Optional: Print just the PLAY RECAP section
-        recap_line = next((line for line in result.stdout.splitlines() if line.strip().startswith("sandboxapicdc.cisco.com")), None)
-        if recap_line:
-            print(f"\n[RECAP for {file_name}]: {recap_line}")
-
-    except Exception as e:
-        print(f"[Exception while running playbook for {file_name}]: {e}")
 
 def run_ansible_playbook():
     """
     Run Ansible playbooks concurrently using threads.
+    Creates a new YamlFileHandler instance for each YAML file.
     """
-    yml_files = [file for file in os.listdir('./vars') if file.startswith('aci_vars_') and file.endswith('.yml')]
-    if not yml_files:
-        print("No YAML files found in the 'vars' directory.")
+    yaml_handler = YamlFileHandler()
+    spreadsheet_data = yaml_handler.aci_spreadsheet_data[:1]
+
+    if not spreadsheet_data:
+        print("🚫 No YAML variable data found for ACI deployment.")
         return
 
     threads = []
+    counter_label = 1
+    for data_row in spreadsheet_data:
+        # Create a new handler for each file
+        file_yaml_handler = YamlFileHandler()
 
-    for file_name in yml_files:
-        thread = threading.Thread(target=run_playbook, args=(file_name,))
+        # Create and persist YAML file for this data_row
+        file_yaml_handler.create_aci_yaml_files(data_row)
+        file_path = file_yaml_handler.yaml_file_path
+        playbook_handler = PlaybookRunner()
+
+        # Set the file name for the ACI YAML file
+        epg_pair_in_progress = file_yaml_handler.safe_str(data_row.get("CONTRACT_NAME", "")).removeprefix('CON_')
+
+        # Start a new thread to run the playbook
+        thread = threading.Thread(
+            target=playbook_handler.run_playbook,
+            args=(file_path, epg_pair_in_progress, counter_label)
+        )
         thread.start()
+        sleep(3)  # Optional sleep to avoid overwhelming the system
+        counter_label += 1
         threads.append(thread)
 
+    # Wait for all threads to complete
     for thread in threads:
-        thread.join()  # Wait for all threads to finish
-
-    print("\n✅ Playbook Completed Successfully.")
-
+        thread.join()
 
 if __name__ == "__main__":
     run_ansible_playbook()

@@ -1,7 +1,7 @@
 aps:
 - ap: AP_DAVINCI_HUB_MEDIA
 bridge_domains:
-- bd: prod_tn
+- bd: BD_Default
   gateway: 192.168.0.1
   mask: '24'
   scope: public
@@ -18,19 +18,19 @@ epg_contracts:
   scope: vrf
 epgs:
 - ap: AP_DAVINCI_HUB_MEDIA
-  bd: prod_tn
+  bd: BD_Default
   encap: '22'
   epg: EPG_DAVINCI_HUB_MEDIA
 external_epg:
 - contract: CON_EPG_L3OUT-to-EPG_DAVINCI_HUB_MEDIA
   contract_type: consumer
-  l3out_ext_epg: EXT_EPG_INTERNET
-  l3out_name: l3Out
+  l3out_ext_epg: EXT_EPG_Default
+  l3out_name: L3OUT_Default
 filters:
 - entry: TCP_2101_FLT
   filter: TCP_2101_FLT
   port_from: '2101'
   port_to: '2101'
   protocol: tcp
-tenant: TN_Test
-vrf: prod_legacy
+tenant: TN_Default
+vrf: VRF_Default
