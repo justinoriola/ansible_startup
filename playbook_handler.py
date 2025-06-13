@@ -14,19 +14,22 @@ class PlaybookHandler:
         self.task_name = None
         PlaybookHandler.INSTANCE_COUNTER += 1
 
-    def run_ansible_playbook(self, spreadsheet_data):
+    def run_ansible_playbook(self, epg_deployment_data):
         """
         Run Ansible playbooks concurrently using threads.
         Creates a new YamlFileHandler instance for each YAML file.
         """
+        # Ensure aci_data is a list; if it's a dict, wrap it in a list
+        if isinstance(epg_deployment_data, dict):
+            epg_deployment_data = [epg_deployment_data]
 
-        if not spreadsheet_data:
+        if not epg_deployment_data:
             print("🚫 No YAML variable data found for ACI deployment.")
             return
 
         threads = []
         counter_label = 1
-        for data_row in spreadsheet_data:
+        for data_row in epg_deployment_data:
 
             # Create a new handler for each file
             file_yaml_handler = YamlFileHandler()
