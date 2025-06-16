@@ -1,0 +1,42 @@
+aps:
+- ap: AP_RFH_CLUB
+- ap: AP_DAVINCI_HUB_MEDIA
+bridge_domains:
+- bd: BD_Default
+  gateway: 192.168.0.1
+  mask: '24'
+  scope: public
+contracts:
+- contract: CON_EPG_RFH_CLUB-to-EPG_DAVINCI_HUB_MEDIA
+  filter: TCP_8888_FLT
+  scope: vrf
+  subject: SUBJ_EPG_RFH_CLUB-to-EPG_DAVINCI_HUB_MEDIA
+epg_contracts:
+- ap: AP_DAVINCI_HUB_MEDIA
+  contract: CON_EPG_RFH_CLUB-to-EPG_DAVINCI_HUB_MEDIA
+  contract_type: provider
+  epg: EPG_DAVINCI_HUB_MEDIA
+  scope: vrf
+- ap: AP_RFH_CLUB
+  contract: CON_EPG_RFH_CLUB-to-EPG_DAVINCI_HUB_MEDIA
+  contract_type: consumer
+  epg: EPG_RFH_CLUB
+  scope: vrf
+epgs:
+- ap: AP_DAVINCI_HUB_MEDIA
+  bd: BD_Default
+  encap: '22'
+  epg: EPG_DAVINCI_HUB_MEDIA
+- ap: AP_RFH_CLUB
+  bd: BD_Default
+  encap: '22'
+  epg: EPG_RFH_CLUB
+external_epg: false
+filters:
+- entry: TCP_8888_FLT
+  filter: TCP_8888_FLT
+  port_from: '8888'
+  port_to: '8888'
+  protocol: tcp
+tenant: TN_Default
+vrf: VRF_Default

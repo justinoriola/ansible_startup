@@ -23,4 +23,4 @@ TestResults.xml
 rsa_key
 rsa_key.pub
 .env
-.vars
+vars/*

@@ -1,6 +1,7 @@
 import yaml
 import pandas as pd
 import os
+import shutil
 
 class FileHandler:
     ACI_SPREADSHEET_PATH = "/Users/justin/Desktop/Justin/cisco_sandboxes/Dev_sec_plan/DevSec study plan.xlsx"
@@ -253,40 +254,70 @@ class FileHandler:
         # Ensure all necessary keys are present in the output data
         return output_data
 
+
     def update_spreadsheet_data(self, new_data):
         """
         Update the ACI spreadsheet data with new entries, avoiding exact duplicates.
+        If no backup exists, create one before modifying the original Excel file.
+
         :param new_data: Dict or List of dictionaries containing new ACI data.
         """
-        # Normalize single dict to list of dicts
+        # === Validate and normalize input ===
+        if not new_data:
+            print("⚠️ No data provided to update.")
+            return
+
         if isinstance(new_data, dict):
             new_data = [new_data]
 
-        # Ensure valid format
         if not isinstance(new_data, list) or not all(isinstance(item, dict) for item in new_data):
             print("❌ New data must be a dictionary or a list of dictionaries.")
             return
 
-        # Avoid duplicates: convert existing rows to a set of frozensets for comparison
-        existing_set = {frozenset(item.items()) for item in self.aci_spreadsheet_data}
+        # === Ensure in-memory store is initialized ===
+        if not hasattr(self, 'aci_spreadsheet_data') or not isinstance(self.aci_spreadsheet_data, list):
+            self.aci_spreadsheet_data = []
 
-        # Filter out exact matches
+        # === File paths ===
+        output_path = FileHandler.ACI_SPREADSHEET_PATH
+        backup_path = output_path.replace('.xlsx', '_backup.xlsx')
+
+        # === If backup doesn't exist, create it before updating ===
+        if not os.path.exists(backup_path):
+            if os.path.exists(output_path):
+                try:
+                    shutil.copyfile(output_path, backup_path)
+                    print(f"🛡️ Backup created before update at: {backup_path}")
+                except Exception as e:
+                    print(f"❌ Failed to create backup: {e}")
+                    return
+            else:
+                print("⚠️ No existing spreadsheet found to back up.")
+
+        # === Deduplicate: Compare with existing data ===
+        existing_set = {frozenset(item.items()) for item in self.aci_spreadsheet_data}
         filtered_new_data = [item for item in new_data if frozenset(item.items()) not in existing_set]
 
         if not filtered_new_data:
             print("ℹ️ No new unique data to update. All entries already exist.")
             return
 
-        # Append unique new entries and write to file
+        # === Extend in-memory data ===
         self.aci_spreadsheet_data.extend(filtered_new_data)
+
+        # === Save updated file and overwrite backup ===
         try:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
             df = pd.DataFrame(self.aci_spreadsheet_data)
-            df.to_excel(
-                FileHandler.ACI_SPREADSHEET_PATH,
-                index=False,
-                sheet_name='ACI_CONTRACTS',
-                engine='openpyxl'
-            )
-            print(f"✅ ACI spreadsheet updated with {len(filtered_new_data)} new record(s).")
+
+            # Save updated Excel file
+            df.to_excel(output_path, index=False, sheet_name='ACI_CONTRACTS', engine='openpyxl')
+            print(f"✅ Spreadsheet updated with {len(filtered_new_data)} new record(s).")
+
+            # Overwrite backup
+            shutil.copyfile(output_path, backup_path)
+            print(f"🔁 Backup refreshed at: {backup_path}")
+
         except Exception as e:
-            print(f"⚠️ Error updating ACI spreadsheet: {e}")
+            print(f"❌ Error saving updated spreadsheet: {e}")

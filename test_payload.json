@@ -15,7 +15,7 @@
   "ACTION": "permit",
   "STATEFUL": "yes",
   "DEPLOY?": null,
-  "CREATED_BY": "Kishor",
+  "CREATED_BY": "Adelina",
   "INCLUDED IN VZANY DEFAULT RULE": "Yes",
   "NOTES": "DaVinci Robots 151.211.171.2 & 151.211.164.8 to RFL-INTUITIVE 151.211.211.129 - Application Updates"
 }
