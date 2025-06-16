@@ -4,15 +4,16 @@ import json
 import subprocess
 import threading
 from threading import Lock
-from yaml_file_handler import YamlFileHandler
+from file_handler import FileHandler
+import queue
 
 class PlaybookHandler:
 
-    INSTANCE_COUNTER = 0
     def __init__(self):
         self.play_recap = ""
         self.task_name = None
-        PlaybookHandler.INSTANCE_COUNTER += 1
+        self.results_queue = queue.Queue()
+        self.failure_captured = False
 
     def run_ansible_playbook(self, epg_deployment_data):
         """
@@ -32,7 +33,7 @@ class PlaybookHandler:
         for data_row in epg_deployment_data:
 
             # Create a new handler for each file
-            file_yaml_handler = YamlFileHandler()
+            file_yaml_handler = FileHandler()
 
             # Create and persist YAML file for this data_row
             file_yaml_handler.create_aci_yaml_files(data_row)
@@ -53,6 +54,12 @@ class PlaybookHandler:
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
+
+        # Collect results
+        results = []
+        while not self.results_queue.empty():
+            results.append(self.results_queue.get())
+        return results
 
     def run_playbook(self, file_name, epg_pair_in_progress, counter_label):
         """
@@ -79,29 +86,30 @@ class PlaybookHandler:
 
             success_flag = False
             recap_buffer = ""
-            failure_captured = False
+
 
             for line in process.stdout:
                 line = line.strip()
 
                 # Error capture
-                if "msg" in line and "failed:" in line.lower():
+                if "msg" in line and "fatal:" in line.lower():
+
                     try:
                         match = re.search(r'=> (.*)$', line)
                         if match:
                             error_msg = json.loads(match.group(1)).get("msg", "No error message found.")
                             recap_buffer += (
                                     f"\n[#{counter_label}] PLAY RECAP: {epg_pair_in_progress}\n"
-                                    + '-' * 152 +
+                                    + '-' * 157 +
                                     f"\n❌ Deployment Failed @[{self.task_number}] - {error_msg}\n"
                             )
 
-                            failure_captured = True
-                            break  # Stop processing on fatal error
+                            self.failure_captured = True
+                            break   # Exit loop on error
 
                     except json.JSONDecodeError:
                         recap_buffer += f"\n⚠️ [#{counter_label}] Error parsing failure message.\n"
-                        # failure_captured = True
+                        self.failure_captured = True
                         break
 
                 # Task tracking
@@ -128,6 +136,6 @@ class PlaybookHandler:
             # Print only once after the loop
             if recap_buffer:
                 print(recap_buffer.strip())
-
+            self.results_queue.put(process.returncode)
         except Exception as e:
             print(f"💥 [#{counter_label}] Exception while running playbook for '{epg_pair_in_progress}': {e}")

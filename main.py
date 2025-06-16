@@ -1,31 +1,26 @@
 import os
 import json
 from flask import Flask, request, jsonify
-from dotenv import load_dotenv
-from yaml_file_handler import YamlFileHandler
+from validation_handler import ValidationHandler
+from file_handler import FileHandler
 from playbook_handler import PlaybookHandler
 
 # === Load environment variables ===
-load_dotenv('.env')
-FLASK_API_KEY = os.environ.get('FLASK_API_KEY')
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'  # Disable SSH key checking for Ansible
 
 # === Initialize Flask app and handlers ===
 app = Flask(__name__)
-yaml_handler = YamlFileHandler()
+file_handler = FileHandler()
 playbook_handler = PlaybookHandler()
 
-def is_authorized(req):
-    """Validate the incoming request's API key."""
-    return req.headers.get("X-API-KEY") == FLASK_API_KEY
 
-@app.route('/epg_deploy', methods=['POST'])
+@app.route('/epg_deploy/R5T_0MrK9', methods=['POST'])
 def epg_deploy():
     """
     Accepts EPG deployment data and triggers the Ansible playbook.
     """
     # === Check if the request is authorized ===
-    if not is_authorized(request):
+    if not ValidationHandler.is_authorized(request):
         return jsonify({"error": "Unauthorized"}), 401
 
     try:
@@ -33,17 +28,43 @@ def epg_deploy():
     except Exception as e:
         return jsonify({"error": "Invalid JSON", "details": str(e)}), 400
 
+    # === Check requirement for spreadsheet or payload data ===
     if not isinstance(data, dict) or not data:
         return jsonify({"error": "Empty or malformed JSON payload"}), 400
 
     # === Log the received payload for debugging ===
     print("Received payload:\n", json.dumps(data, indent=2))
 
+    # Extract the payload from the data
+    payload = data.get("payload")
+
+    # If payload is a dictionary and not the string "spreadsheet", extract it
+    if isinstance(payload, dict):
+        data = payload
+
+    # If payload is explicitly the string "spreadsheet", load data from the spreadsheet source
+    elif payload == "spreadsheet":
+        data = file_handler.aci_spreadsheet_data[-1]  # Use the latest spreadsheet data
+
     try:
-        playbook_handler.run_ansible_playbook(data)
+        # === Deploy EPG ===
+        result = playbook_handler.run_ansible_playbook(data)
+        if not result or result[0] != 0:
+            raise RuntimeError(f"Ansible playbook execution failed")
+
+        # === Update spreadsheet data if payload is a dictionary ===
+        if isinstance(payload, dict):
+            file_handler.update_spreadsheet_data(data)
         return jsonify({"message": "EPG deployment succeeded"}), 200
+
     except Exception as e:
-        return jsonify({"error": "Ansible playbook execution failed", "details": str(e)}), 500
+        return jsonify({
+            "error": "EPG deployment failed",
+            "details": str(e)
+        }), 500
+
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5050, debug=True)

@@ -2,7 +2,7 @@ import yaml
 import pandas as pd
 import os
 
-class YamlFileHandler:
+class FileHandler:
     ACI_SPREADSHEET_PATH = "/Users/justin/Desktop/Justin/cisco_sandboxes/Dev_sec_plan/DevSec study plan.xlsx"
 
     def __init__(self, tenant_name=None, vrf_name=None, bridge_domain_name=None, bridge_domain_ip=None, l3out=None, l3out_ext_epg_name=None):
@@ -58,7 +58,7 @@ class YamlFileHandler:
 
     def _load_aci_spreadsheet_data(self):
         try:
-            df = pd.read_excel(YamlFileHandler.ACI_SPREADSHEET_PATH, sheet_name='Sheet1')
+            df = pd.read_excel(FileHandler.ACI_SPREADSHEET_PATH, sheet_name='ACI_CONTRACTS', engine='openpyxl')
             data = df.to_dict(orient='records')
             return data if data else {}
         except FileNotFoundError:
@@ -110,7 +110,7 @@ class YamlFileHandler:
             print(f"Missing required keys: {', '.join(missing)}")
             return {}
 
-        safe = YamlFileHandler.safe_str  # Shortcut for cleaner lines
+        safe = FileHandler.safe_str  # Shortcut for cleaner lines
 
         def build_application_profiles():
             try:
@@ -252,3 +252,41 @@ class YamlFileHandler:
 
         # Ensure all necessary keys are present in the output data
         return output_data
+
+    def update_spreadsheet_data(self, new_data):
+        """
+        Update the ACI spreadsheet data with new entries, avoiding exact duplicates.
+        :param new_data: Dict or List of dictionaries containing new ACI data.
+        """
+        # Normalize single dict to list of dicts
+        if isinstance(new_data, dict):
+            new_data = [new_data]
+
+        # Ensure valid format
+        if not isinstance(new_data, list) or not all(isinstance(item, dict) for item in new_data):
+            print("❌ New data must be a dictionary or a list of dictionaries.")
+            return
+
+        # Avoid duplicates: convert existing rows to a set of frozensets for comparison
+        existing_set = {frozenset(item.items()) for item in self.aci_spreadsheet_data}
+
+        # Filter out exact matches
+        filtered_new_data = [item for item in new_data if frozenset(item.items()) not in existing_set]
+
+        if not filtered_new_data:
+            print("ℹ️ No new unique data to update. All entries already exist.")
+            return
+
+        # Append unique new entries and write to file
+        self.aci_spreadsheet_data.extend(filtered_new_data)
+        try:
+            df = pd.DataFrame(self.aci_spreadsheet_data)
+            df.to_excel(
+                FileHandler.ACI_SPREADSHEET_PATH,
+                index=False,
+                sheet_name='ACI_CONTRACTS',
+                engine='openpyxl'
+            )
+            print(f"✅ ACI spreadsheet updated with {len(filtered_new_data)} new record(s).")
+        except Exception as e:
+            print(f"⚠️ Error updating ACI spreadsheet: {e}")
