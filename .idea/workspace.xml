@@ -5,15 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="28c476a0-6157-482f-b8e3-bd74f73a08c7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/notification_handler.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/DevSec study plan.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/file_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/file_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_config_0x105e1f610.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_config_0x105f44a50.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_config_0x10723f610.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_config_0x10733a3f0.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vars/aci_config_0x107364a50.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +21,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
