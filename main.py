@@ -1,16 +1,20 @@
 import os
 import json
+from datetime import datetime
 from flask import Flask, request, jsonify
 from validation_handler import ValidationHandler
 from file_handler import FileHandler
 from playbook_handler import PlaybookHandler
+from notification_handler import NotificationHandler
 
 # === Load environment variables ===
 os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'  # Disable SSH key checking for Ansible
+MY_NUMBER = "whatsapp:" + os.getenv('MY_NUMBER')
 
 # === Initialize Flask app and handlers ===
 app = Flask(__name__)
 file_handler = FileHandler()
+notification_handler = NotificationHandler()
 playbook_handler = PlaybookHandler()
 
 
@@ -55,15 +59,30 @@ def epg_deploy():
         # === Update spreadsheet data if payload is a dictionary ===
         if isinstance(payload, dict):
             file_handler.update_spreadsheet_data(data)
-        return jsonify({"message": "EPG deployment succeeded"}), 200
 
+        # === Compose message send notification after successful deployment ===
+        message = notification_handler.compose_deployment_report_message(data=data)
+        content_variables = notification_handler.get_content_variables(data)
+        test_aci_content_sid = "HX7fa17c029ae3f32ab865bbb3cfd77eaa"
+
+        # === Send WhatsApp message notification ===
+        if message:
+            try:
+                notification_handler.send_whatsapp_message(
+                    MY_NUMBER,
+                    message,
+                    content_sid=test_aci_content_sid,
+                    content_variables=content_variables
+                )
+            except Exception as e:
+                print(f"Failed to send WhatsApp message: {e}")
+
+        return jsonify({"message": "EPG deployment succeeded"}), 200
     except Exception as e:
         return jsonify({
             "error": "EPG deployment failed",
             "details": str(e)
         }), 500
-
-
 
 
 if __name__ == "__main__":

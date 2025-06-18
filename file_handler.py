@@ -1,3 +1,5 @@
+import math
+
 import yaml
 import pandas as pd
 import os
@@ -294,9 +296,23 @@ class FileHandler:
             else:
                 print("⚠️ No existing spreadsheet found to back up.")
 
+        # === Normalize values for comparison ===
+        def normalize(value):
+            if value is None or (isinstance(value, float) and math.isnan(value)):
+                return ''
+            return str(value).strip()
+
+        # === Function to convert entry to a row signature for deduplication ===
+        def to_row_signature(entry):
+            keys = [
+                "CONSUMED_EPG", "PROVIDED_EPG", "CONTRACT_NAME", "SUBJECT_NAME",
+                "VZ_FILTER_NAME", "IP_PROTOCOL", "PORTS_FROM", "PORTS_TO", "ACTION"
+            ]
+            return tuple(normalize(entry.get(k)) for k in keys)
+
         # === Deduplicate: Compare with existing data ===
-        existing_set = {frozenset(item.items()) for item in self.aci_spreadsheet_data}
-        filtered_new_data = [item for item in new_data if frozenset(item.items()) not in existing_set]
+        existing_signatures = {to_row_signature(item) for item in self.aci_spreadsheet_data}
+        filtered_new_data = [item for item in new_data if to_row_signature(item) not in existing_signatures]
 
         if not filtered_new_data:
             print("ℹ️ No new unique data to update. All entries already exist.")
