@@ -6,7 +6,7 @@ import os
 import shutil
 
 class FileHandler:
-    ACI_SPREADSHEET_PATH = "./data/DevSec_study_plan.xlsx"
+    ACI_SPREADSHEET_PATH = "./data/:DevSec_study_plan.xlsx"
 
     def __init__(self, tenant_name=None, vrf_name=None, bridge_domain_name=None, bridge_domain_ip=None, l3out=None, l3out_ext_epg_name=None):
         self.l3out_status = False
