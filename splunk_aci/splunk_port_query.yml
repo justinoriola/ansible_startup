@@ -1,0 +1,32 @@
+---
+- name: Query Splunk denied ports
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    splunk_url: "https://royalfreenhs.splunkcloud.com"
+    splunk_token: "YOUR_SPLUNK_TOKEN"
+
+    spl_query: >
+      search permit/deny=DENY Source_IP={{ src_ip }}
+      | table _time Source_IP Destination_IP Protocol Source_Port Destination_Port
+
+  tasks:
+
+    - name: Run Splunk search
+      uri:
+        url: "{{ splunk_url }}/services/search/v2/jobs/export"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ splunk_token }}"
+        body_format: form-urlencoded
+        body:
+          search: "{{ spl_query }}"
+          output_mode: json
+        return_content: yes
+      register: splunk_output
+
+    - name: Show results
+      debug:
+        var: splunk_output.json
