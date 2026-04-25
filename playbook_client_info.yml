@@ -1,0 +1,38 @@
+---
+- name: Find where a MAC address is connected
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    dnac_host: "{{ lookup('env', 'DNAC_HOST') }}"
+    dnac_username: "{{ lookup('env', 'DNAC_USERNAME') }}"
+    dnac_password: "{{ lookup('env', 'DNAC_PASSWORD') }}"
+    mac_address: "28:00:AF:74:E8:AB"
+
+  tasks:
+
+    - name: Query DNAC for endpoint
+      cisco.dnac.clients_info:
+        dnac_host: "{{ dnac_host }}"
+        dnac_username: "{{ dnac_username }}"
+        dnac_password: "{{ dnac_password }}"
+        dnac_verify: false
+        macAddress: "{{ mac_address }}"
+      register: client_info
+
+    - name: Show switch and port
+      debug:
+        msg:
+          - "MAC      : {{ mac_address }}"
+          - "Switch   : {{ client_info.dnac_response.response[0].connectedNetworkDeviceName }}"
+          - "Interface: {{ client_info.dnac_response.response[0].port }}"
+      when:
+        - client_info.dnac_response.response is defined
+        - client_info.dnac_response.response | length > 0
+
+    - name: MAC not found
+      debug:
+        msg: "MAC {{ mac_address }} not found in DNAC"
+      when: >
+        client_info.dnac_response.response is not defined or
+        client_info.dnac_response.response | length == 0

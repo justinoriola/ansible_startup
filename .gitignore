@@ -24,3 +24,15 @@ rsa_key
 rsa_key.pub
 .env
 vars/*
+# Python
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
+
+# IDE
+.idea/
+
+# Excel temp
+~$*.xlsx

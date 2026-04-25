@@ -25,7 +25,7 @@ class PlaybookHandler:
             epg_deployment_data = [epg_deployment_data]
 
         if not epg_deployment_data:
-            print("🚫 No YAML variable data found for ACI deployment.")
+            print("⛔️ No YAML variable data found for ACI deployment.")
             return
 
         threads = []
@@ -87,7 +87,6 @@ class PlaybookHandler:
             success_flag = False
             recap_buffer = ""
 
-
             for line in process.stdout:
                 line = line.strip()
 
@@ -101,7 +100,7 @@ class PlaybookHandler:
                             recap_buffer += (
                                     f"\n[#{counter_label}] PLAY RECAP: {epg_pair_in_progress}\n"
                                     + '-' * 157 +
-                                    f"\n❌ Deployment Failed @[{self.task_number}] - {error_msg}\n"
+                                    f"\n⛔️ Deployment Failed @[{self.task_number}] - {error_msg}\n"
                             )
 
                             self.failure_captured = True
@@ -137,5 +136,6 @@ class PlaybookHandler:
             if recap_buffer:
                 print(recap_buffer.strip())
             self.results_queue.put(process.returncode)
+
         except Exception as e:
             print(f"💥 [#{counter_label}] Exception while running playbook for '{epg_pair_in_progress}': {e}")

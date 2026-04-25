@@ -37,7 +37,7 @@ def epg_deploy():
         return jsonify({"error": "Empty or malformed JSON payload"}), 400
 
     # === Log the received payload for debugging ===
-    print("Received payload:\n", json.dumps(data, indent=2))
+    # print("Received payload:\n", json.dumps(data, indent=2))
 
     # Extract the payload from the data
     payload = data.get("payload")
@@ -48,7 +48,7 @@ def epg_deploy():
 
     # If payload is explicitly the string "spreadsheet", load data from the spreadsheet source
     elif payload == "spreadsheet":
-        data = file_handler.aci_spreadsheet_data[-1]  # Use the latest spreadsheet data
+        data = file_handler.aci_spreadsheet_directory[-1]  # Use the latest spreadsheet data
 
     try:
         # === Deploy EPG ===
