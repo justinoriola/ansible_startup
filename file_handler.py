@@ -3,6 +3,7 @@ import yaml
 import pandas as pd
 import os
 import shutil
+import json
 
 
 class FileHandler:
@@ -33,7 +34,7 @@ class FileHandler:
         self.other_epg_contract = None
         self.l3out_contract = None
         self.other_epg_contract_type = None
-        self.aci_spreadsheet_directory = kwargs.get('aci_spreadsheet_directory') or "./data/DevSec_study_plan.xlsx"
+        self.aci_spreadsheet_directory = "./data/aci_spreadsheet_data.xlsx"
         self.yaml_file_path = "vars/aci_config_"
         self.tenant_name = kwargs.get('tenant_name') or "TN_Default"
         self.vrf_name = kwargs.get('vrf_name') or "VRF_Default"
@@ -96,22 +97,26 @@ class FileHandler:
 
     # === End of static utility methods ===
 
-    def _load_aci_spreadsheet_data(self):
+    def _load_aci_spreadsheet_data(self, json_format=False):
         """
         Loads Excel spreadsheet data into memory.
         Returns: - List of dicts (each row = one record) filtered by STATUS == "Done" or empty list on failure
         """
         try:
-            df = pd.read_excel(self.aci_spreadsheet_directory, sheet_name='ACI_CONTRACTS', engine='openpyxl')
+            df = pd.read_excel(self.aci_spreadsheet_directory, engine='openpyxl')
             data = df.to_dict(orient='records')
 
             # Filter only rows where STATUS != "Done"
             rows_with_not_done_status = [row for row in data if str(row.get("STATUS")).strip().lower() != "done"]
 
+            # If JSON format is requested, return the filtered data as a list of dictionaries in JSON string format
+            if json_format:
+                return json.dumps(rows_with_not_done_status, indent=4)
+
             # Return all matching rows as a list (or empty list if none found)
             return rows_with_not_done_status if rows_with_not_done_status else []
         except FileNotFoundError:
-            print("ACI Excel file not found.")
+            print("Spreadsheet not found: ensure 'aci_spreadsheet_data.xlsx' exists in ./data")
             return []
         except Exception as e:
             print(f"Unexpected error reading Excel file: {e}")
