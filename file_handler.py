@@ -99,18 +99,23 @@ class FileHandler:
     def _load_aci_spreadsheet_data(self):
         """
         Loads Excel spreadsheet data into memory.
-        Returns: - List of dicts (each row = one record) or Empty dict on failure
+        Returns: - List of dicts (each row = one record) filtered by STATUS == "Done" or empty list on failure
         """
         try:
             df = pd.read_excel(self.aci_spreadsheet_directory, sheet_name='ACI_CONTRACTS', engine='openpyxl')
             data = df.to_dict(orient='records')
-            return data if data else {}
+
+            # Filter only rows where STATUS != "Done"
+            rows_with_not_done_status = [row for row in data if str(row.get("STATUS")).strip().lower() != "done"]
+
+            # Return all matching rows as a list (or empty list if none found)
+            return rows_with_not_done_status if rows_with_not_done_status else []
         except FileNotFoundError:
             print("ACI Excel file not found.")
-            return {}
+            return []
         except Exception as e:
             print(f"Unexpected error reading Excel file: {e}")
-            return {}
+            return []
 
     def create_aci_yaml_files(self, aci_spreadsheet_row):
         """

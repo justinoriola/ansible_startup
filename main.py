@@ -48,7 +48,7 @@ def epg_deploy():
 
     # If payload is explicitly the string "spreadsheet", load data from the spreadsheet source
     elif payload == "spreadsheet":
-        data = file_handler.aci_spreadsheet_directory[-1]  # Use the latest spreadsheet data
+        data = file_handler.aci_spreadsheet_data  # Use the latest spreadsheet data
 
     try:
         # === Deploy EPG ===
@@ -61,21 +61,21 @@ def epg_deploy():
             file_handler.update_spreadsheet_data(data)
 
         # === Compose message send notification after successful deployment ===
-        message = notification_handler.compose_deployment_report_message(data=data)
-        content_variables = notification_handler.get_content_variables(data)
-        test_aci_content_sid = "HX7fa17c029ae3f32ab865bbb3cfd77eaa"
-
-        # === Send WhatsApp message notification ===
-        if message:
-            try:
-                notification_handler.send_whatsapp_message(
-                    MY_NUMBER,
-                    message,
-                    content_sid=test_aci_content_sid,
-                    content_variables=content_variables
-                )
-            except Exception as e:
-                print(f"Failed to send WhatsApp message: {e}")
+        # message = notification_handler.compose_deployment_report_message(data=data)
+        # content_variables = notification_handler.get_content_variables(data)
+        # test_aci_content_sid = "HX7fa17c029ae3f32ab865bbb3cfd77eaa"
+        #
+        # # === Send WhatsApp message notification ===
+        # if message:
+        #     try:
+        #         notification_handler.send_whatsapp_message(
+        #             MY_NUMBER,
+        #             message,
+        #             content_sid=test_aci_content_sid,
+        #             content_variables=content_variables
+        #         )
+        #     except Exception as e:
+        #         print(f"Failed to send WhatsApp message: {e}")
 
         return jsonify({"message": "EPG deployment succeeded"}), 200
     except Exception as e:

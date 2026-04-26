@@ -15,32 +15,33 @@ class PlaybookHandler:
         self.results_queue = queue.Queue()
         self.failure_captured = False
 
-    def run_ansible_playbook(self, epg_deployment_data):
+    def run_ansible_playbook(self, spreadsheet_rows_data):
         """
         Run Ansible playbooks concurrently using threads.
         Creates a new YamlFileHandler instance for each YAML file.
         """
-        # Ensure aci_data is a list; if it's a dict, wrap it in a list
-        if isinstance(epg_deployment_data, dict):
-            epg_deployment_data = [epg_deployment_data]
+        # Ensure spreadsheet_rows_data is a list; if it's a dict, wrap it in a list
+        if isinstance(spreadsheet_rows_data, dict):
+            spreadsheet_rows_data = [spreadsheet_rows_data]
 
-        if not epg_deployment_data:
+        if not spreadsheet_rows_data:
             print("⛔️ No YAML variable data found for ACI deployment.")
             return
 
         threads = []
         counter_label = 1
-        for data_row in epg_deployment_data:
+        for data_row in spreadsheet_rows_data:
 
             # Create a new handler for each file
-            file_yaml_handler = FileHandler()
+            file_handler = FileHandler()
 
             # Create and persist YAML file for this data_row
-            file_yaml_handler.create_aci_yaml_files(data_row)
-            file_path = file_yaml_handler.yaml_file_path
+            file_handler.create_aci_yaml_files(data_row)
+            file_path = file_handler.yaml_file_path
 
             # Set the file name for the ACI YAML file
-            epg_pair_in_progress = file_yaml_handler.safe_str(data_row.get("CONTRACT_NAME", "")).removeprefix('CON_')
+            contract_name = file_handler.safe_str(data_row.get("CONTRACT_NAME", ""))
+            epg_pair_in_progress = contract_name[4:] if contract_name.startswith("CON_") else contract_name
 
             # Start a new thread to run the playbook
             thread = threading.Thread(
